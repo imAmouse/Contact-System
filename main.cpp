@@ -41,13 +41,14 @@ public:
     void look_though(); //浏览全部
     void transfer(bool j); //转存：False:phone to card True:card to phone
     bool get_judge(int PhoneNum){return contact[PhoneNum].get_judge();}
+    void Read();
     void Save();
 };
 book::book(bool weizhi):weizhi(weizhi) {}
 void book::add_person() {
     int num;
     for (int i = 0; i < 1000; i++) {
-        if (contact[i].get_judge() == false)
+        if (!contact[i].get_judge())
             num = i;
     }
     string temp;
@@ -90,10 +91,10 @@ void book::find_person(string name) {
     for(int i=0;i<1000;i++){
         if(name==contact[i].get_name()) {
 
-            cout << contact[i].get_name() << "\t" << contact[i].get_num_phone() << "\t\t" << contact[i].get_num_qq() << "\t\t"
+            cout << contact[i].get_name() << "\t" << contact[i].get_num_phone() << "\t" << contact[i].get_num_qq() << "\t"
                  << contact[i].get_address();
             if (!weizhi)
-                cout << "\t内部" << "\t" << i << "\n";
+                cout << "\t手机存储" << "\t" << i << "\n";
             if (weizhi)
                 cout << "\t储存卡" << "\t" << i << "\n";
         }
@@ -102,25 +103,43 @@ void book::find_person(string name) {
 void book::look_though() {
     for(int i=0;i<1000;i++)
         if(contact[i].get_judge()==true) {
-            cout << contact[i].get_name() << "\t" << contact[i].get_num_phone() << "\t\t" << contact[i].get_num_qq() << "\t\t"
+            cout << contact[i].get_name() << "\t" << contact[i].get_num_phone() << "\t" << contact[i].get_num_qq() << "\t"
                  << contact[i].get_address() ;
             if (!weizhi)
                 cout << "\t内部" << "\t" << i << "\n";
             if (weizhi)
                 cout << "\t储存卡" << "\t" << i << "\n";
         }
+}
+void book::Read() {
+    string str,a,b,c,d;
+    if(!weizhi)
+        str="PhoneIn.ini";
+    else if(weizhi)
+        str="PhoneSdCard.ini";
+    fstream tooo(str.c_str(),ios::in);
+    for(int i=0;tooo.peek()!=EOF;i++){
+        if(!contact[i].get_judge()){
+            tooo>>a>>b>>c>>d;
+            contact[i].set_name(a);
+            contact[i].set_num_phone(b);
+            contact[i].set_num_qq(c);
+            contact[i].set_address(d);
+            contact[i].set_judge(true);
+        }
     }
+}
 void book::Save() {
     string str;
     if(!weizhi)
         str="PhoneIn.ini";
     else if(weizhi)
         str="PhoneSdCard.ini";
-    fstream tooo(str);
+    fstream tooo(str.c_str(),ios::out);
     for(int i=0;i<1000;i++){
         if(contact[i].get_judge()) {
-            tooo << contact[i].get_name() << ends << contact[i].get_num_phone() << ends << contact[i].get_num_qq()
-                 << ends << contact[i].get_address() << endl;
+            tooo << contact[i].get_name() << " " << contact[i].get_num_phone() << " " << contact[i].get_num_qq()
+                 << " " << contact[i].get_address() << "\n";
         }
     }
 }
@@ -129,26 +148,30 @@ void book::Save() {
 
 int main() {
     book phone_in(false), phone_card(true); //定义手机通讯录 、储存卡通讯录
+    phone_in.Read();
+    phone_card.Read();
     while (true) {
-        cout << "************************************\n";
-        cout << "*                                  *\n";
-        cout << "*　　　　　通讯录管理系统              *\n";
-        cout << "*　　　请输入数字来进行有关操作：       *\n";
-        cout << "*　　　1、 添加联系人                 *\n";
-        cout << "*　　　2、 删除联系人                 *\n";
-        cout << "*　　　3、 查找联系人                 *\n";
-        cout << "*　　　4、 修改已经存在的联系人信息     *\n";
-        cout << "*　　　5、 浏览已经存在的联系人信息     *\n";
-        cout << "*　　　9、 退出系统                   *\n";
-        cout << "*                                  *\n";
-        cout << "************************************\n";
+        cout.setf(ios::left);
+        cout<<setw(46)<<"*"<<cout.fill('*')<<"\n";
+        cout.fill(' ');
+        cout <<setw(45)<< "*"<<"*\n";
+        cout <<setw(45)<< "*　　　　　通讯录管理系统"<<"*\n";
+        cout <<setw(45)<< "*      请输入数字来进行有关操作："<<"*\n";
+        cout <<setw(45)<< "*　　　1、 添加联系人"<<"*\n";
+        cout <<setw(45)<< "*　　　2、 删除联系人"<<"*\n";
+        cout <<setw(45)<< "*　　　3、 查找联系人"<<"*\n";
+        cout <<setw(45)<< "*　　　4、 修改已经存在的联系人信息"<<"*\n";
+        cout <<setw(45)<< "*　　　5、 浏览已经存在的联系人信息"<<"*\n";
+        cout <<setw(45)<< "*　　　9、 退出系统"<<"*\n";
+        cout <<setw(45)<< "*"<<"*\n";
+        cout<<setw(46)<<"*"<<cout.fill('*')<<"\n";
         int num;
         string name;
         cin >> num;
         switch (num) {
             case 1: //添加联系人
                 while (true) {
-                    cout << "请选择存储位置：\n1、内部\t2、储存卡\n";
+                    cout << "请选择存储位置：\n1、手机存储\t2、储存卡\n";
                     cin >> num;
                     if (num == 1) {
                         phone_in.add_person();
@@ -164,7 +187,7 @@ int main() {
                 while (true) {
                     cout<<"请输入联系人姓名：\n";
                     cin>>name;
-                    cout<<"姓名\t电话号\tQQ号\t地址\t内部&存储卡\t序号\n";
+                    cout<<"姓名\t电话号\tQQ号\t地址\t位置\t序号\n";
                     phone_in.find_person(name);
                     phone_card.find_person(name);
                     cout<<"是否还要删除其他联系人？(Y/N)";
@@ -175,7 +198,7 @@ int main() {
                 while(true) {
                     cout<<"请输入被查找姓名：\n";
                     cin>>name;
-                    cout<<"姓名\t电话号\tQQ号\t地址\t内部&存储卡\t序号\n";
+                    cout<<"姓名\t电话号\tQQ号\t地址\t位置\t序号\n";
                     phone_in.find_person(name);
                     phone_card.find_person(name);
                     cout<<"你想查找其他联系人吗？(Y/N)\n";
@@ -193,7 +216,7 @@ int main() {
 
                 }break;
             case 5: //浏览已存储联系人
-                cout<<"姓名\t电话号\tQQ号\t地址\t内部&存储卡\t序号\n";
+                cout<<"姓名\t电话号\tQQ号\t地址\t位置\t序号\n";
                 phone_in.look_though();
                 phone_card.look_though();
                 break;
